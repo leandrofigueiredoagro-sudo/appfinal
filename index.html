@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amigo da Balança</title>
-    <!-- Inclui a biblioteca Tailwind CSS para estilização -->
+    
+    <link rel="manifest" href="manifest.json">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inclui a biblioteca jsPDF para gerar o arquivo PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Inclui o plugin jspdf-autotable para formatar tabelas no PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         body {
@@ -24,31 +24,25 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-2xl w-full">
-        <!-- Cabeçalho -->
         <header class="bg-green-700 text-white p-4 rounded-xl mb-6">
             <h1 class="text-2xl font-bold text-center">Amigo da Balança</h1>
         </header>
 
-        <!-- Seção de Lançamento de Dados -->
         <section class="mb-8">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Lançamento de Dados</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Campo para ID (opcional) -->
                 <div>
                     <label for="animal-id" class="block text-sm font-medium text-gray-700">ID do Animal (opcional)</label>
                     <input type="text" id="animal-id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2">
                 </div>
-                <!-- Campo para Peso do Animal -->
                 <div>
                     <label for="animal-peso" class="block text-sm font-medium text-gray-700">Peso do Animal (kg)</label>
                     <input type="text" inputmode="decimal" id="animal-peso" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2" required>
                 </div>
-                <!-- Campo para Raça do Animal -->
                 <div>
                     <label for="animal-raca" class="block text-sm font-medium text-gray-700">Raça</label>
                     <input type="text" id="animal-raca" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
                 </div>
-                <!-- Campo para Sexo do Animal -->
                 <div>
                     <label for="animal-sexo" class="block text-sm font-medium text-gray-700">Sexo</label>
                     <select id="animal-sexo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
@@ -59,50 +53,39 @@
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row justify-center mt-6 space-y-4 sm:space-y-0 sm:space-x-4">
-                <!-- Botão para adicionar/atualizar animal -->
                 <button id="add-animal-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
                     Adicionar Animal
                 </button>
-                <!-- Botão para editar o último animal adicionado -->
                 <button id="edit-last-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
                     Editar Último
                 </button>
             </div>
             <div class="flex justify-center mt-4">
-                <!-- Botão para gerar o PDF -->
                 <button id="generate-pdf-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
                     Gerar Relatório PDF
                 </button>
             </div>
         </section>
 
-        <!-- Seção de Resumo da Pesagem -->
         <section class="mb-8">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Resumo da Pesagem</h2>
-            <!-- Total da Pesagem -->
             <div class="mb-6 p-4 rounded-xl bg-gray-100">
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Total da Pesagem</h3>
                 <div id="calculations-total" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Conteúdo gerado dinamicamente via JS -->
-                </div>
+                    </div>
             </div>
-            <!-- Cálculos por Raça -->
             <div class="mb-6 p-4 rounded-xl bg-gray-100">
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Por Raça</h3>
                 <div id="calculations-by-raca" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Conteúdo gerado dinamicamente via JS -->
-                </div>
+                    </div>
             </div>
-            <!-- Cálculos por Raça e Sexo -->
             <div class="mb-6 p-4 rounded-xl bg-gray-100">
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Por Raça e Sexo</h3>
                 <div id="calculations-by-raca-sexo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Conteúdo gerado dinamicamente via JS -->
-                </div>
+                    </div>
             </div>
         </section>
 
-        <!-- Seção da Lista de Animais -->
         <section class="mb-8">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">Lista de Animais</h2>
             <div class="bg-gray-100 p-4 rounded-xl">
@@ -117,26 +100,22 @@
                         </tr>
                     </thead>
                     <tbody id="animal-list-body">
-                        <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Botão para limpar dados -->
         <div class="flex justify-center mt-6">
             <button id="clear-data-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
                 Limpar Dados
             </button>
         </div>
 
-        <!-- Mensagem de feedback (substitui 'alert') -->
         <div id="message-box" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 text-white p-4 rounded-lg shadow-2xl z-50 hidden">
             <p id="message-text"></p>
         </div>
     </div>
 
-    <!-- Modal para inserir o nome do responsável e categoria do lote -->
     <div id="name-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-overlay">
         <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full">
             <h3 class="text-lg font-bold mb-4 text-center">Informações do Relatório</h3>
@@ -608,6 +587,22 @@
 
         // Chamada inicial para atualizar os cálculos
         updateCalculos();
+    </script>
+
+    <script>
+      // Este script registra o Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          // O caminho '/appfinal/service-worker.js' é crucial para o GitHub Pages
+          navigator.serviceWorker.register('/appfinal/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registrado com sucesso!', registration);
+            })
+            .catch(error => {
+              console.log('Falha ao registrar o Service Worker:', error);
+            });
+        });
+      }
     </script>
 </body>
 </html>
