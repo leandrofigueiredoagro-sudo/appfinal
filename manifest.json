@@ -1,53 +1,21 @@
 {
-  "background_color": "#ffffff",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "Amigo da Balança",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "Pesagem",
-  "start_url": "https://leandrofigueiredoagro-sudo.github.io/lf-agronegocios-pwa/",
-  "theme_color": "#ffffff",
+  "short_name": "Balança",
+  "description": "Aplicativo para lançamento e gerenciamento de pesagem de gado.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f3f4e9",
+  "theme_color": "#166534",
   "icons": [
     {
-      "src": "https://placehold.co/32x32/green/white?text=LF",
-      "type": "image/png",
-      "sizes": "32x32",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 32,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
+      "src": "images/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
-      "src": "https://placehold.co/16x16/green/white?text=LF",
-      "type": "image/png",
-      "sizes": "16x16",
-      "isSquare": true,
-      "isPng": true,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 16,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
-    },
-    {
-      "src": "https://placehold.co/180x180/green/white?text=LF",
-      "sizes": "180x180",
-      "isSquare": true,
-      "isPng": false,
-      "isWebp": false,
-      "isJpg": false,
-      "width": 180,
-      "is512x512": false,
-      "is256x256": false,
-      "is192x192": false
+      "src": "images/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ],
-  "id": "https://leandrofigueiredoagro-sudo.github.io/lf-agronegocios-pwa/",
-  "description": "amigo"
+  ]
 }
