@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigo da Balança</title>
+    <!-- Inclui a biblioteca Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inclui a biblioteca jsPDF para gerar o arquivo PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Inclui o plugin jspdf-autotable para formatar tabelas no PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4e9; /* Fundo bege */
+        }
+        /* Estilo para a sobreposição do modal */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-2xl w-full">
+        <!-- Cabeçalho -->
+        <header class="bg-green-700 text-white p-4 rounded-xl mb-6">
+            <h1 class="text-2xl font-bold text-center">Amigo da Balança</h1>
+        </header>
+
+        <!-- Seção de Lançamento de Dados -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Lançamento de Dados</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Campo para ID (opcional) -->
+                <div>
+                    <label for="animal-id" class="block text-sm font-medium text-gray-700">ID do Animal (opcional)</label>
+                    <input type="text" id="animal-id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2">
+                </div>
+                <!-- Campo para Peso do Animal -->
+                <div>
+                    <label for="animal-peso" class="block text-sm font-medium text-gray-700">Peso do Animal (kg)</label>
+                    <input type="text" inputmode="decimal" id="animal-peso" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2" required>
+                </div>
+                <!-- Campo para Raça do Animal -->
+                <div>
+                    <label for="animal-raca" class="block text-sm font-medium text-gray-700">Raça</label>
+                    <input type="text" id="animal-raca" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                </div>
+                <!-- Campo para Sexo do Animal -->
+                <div>
+                    <label for="animal-sexo" class="block text-sm font-medium text-gray-700">Sexo</label>
+                    <select id="animal-sexo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        <option value="">Selecione...</option>
+                        <option value="Macho">Macho</option>
+                        <option value="Fêmea">Fêmea</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center mt-6 space-y-4 sm:space-y-0 sm:space-x-4">
+                <!-- Botão para adicionar/atualizar animal -->
+                <button id="add-animal-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    Adicionar Animal
+                </button>
+                <!-- Botão para editar o último animal adicionado -->
+                <button id="edit-last-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    Editar Último
+                </button>
+            </div>
+            <div class="flex justify-center mt-4">
+                <!-- Botão para gerar o PDF -->
+                <button id="generate-pdf-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    Gerar Relatório PDF
+                </button>
+            </div>
+        </section>
+
+        <!-- Seção de Resumo da Pesagem -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Resumo da Pesagem</h2>
+            <!-- Total da Pesagem -->
+            <div class="mb-6 p-4 rounded-xl bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Total da Pesagem</h3>
+                <div id="calculations-total" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Conteúdo gerado dinamicamente via JS -->
+                </div>
+            </div>
+            <!-- Cálculos por Raça -->
+            <div class="mb-6 p-4 rounded-xl bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Por Raça</h3>
+                <div id="calculations-by-raca" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Conteúdo gerado dinamicamente via JS -->
+                </div>
+            </div>
+            <!-- Cálculos por Raça e Sexo -->
+            <div class="mb-6 p-4 rounded-xl bg-gray-100">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Por Raça e Sexo</h3>
+                <div id="calculations-by-raca-sexo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Conteúdo gerado dinamicamente via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção da Lista de Animais -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Lista de Animais</h2>
+            <div class="bg-gray-100 p-4 rounded-xl">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">ID</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Peso (kg)</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Raça</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Sexo</th>
+                            <th class="py-2 px-4 text-left font-bold text-gray-700">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="animal-list-body">
+                        <!-- Linhas da tabela serão inseridas aqui via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Botão para limpar dados -->
+        <div class="flex justify-center mt-6">
+            <button id="clear-data-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95">
+                Limpar Dados
+            </button>
+        </div>
+
+        <!-- Mensagem de feedback (substitui 'alert') -->
+        <div id="message-box" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800 text-white p-4 rounded-lg shadow-2xl z-50 hidden">
+            <p id="message-text"></p>
+        </div>
+    </div>
+
+    <!-- Modal para inserir o nome do responsável e categoria do lote -->
+    <div id="name-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-overlay">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-sm w-full">
+            <h3 class="text-lg font-bold mb-4 text-center">Informações do Relatório</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">Estas informações serão adicionadas ao relatório PDF.</p>
+            <div class="mb-4">
+                <label for="responsavel-nome-input" class="block text-sm font-medium text-gray-700 mb-1">Nome do Responsável</label>
+                <input type="text" id="responsavel-nome-input" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="mb-4">
+                <label for="lote-categoria-input" class="block text-sm font-medium text-gray-700 mb-1">Categoria do Lote</label>
+                <input type="text" id="lote-categoria-input" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="flex justify-between mt-6">
+                <button id="modal-cancel-btn" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-xl">
+                    Cancelar
+                </button>
+                <button id="modal-generate-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-xl">
+                    Gerar Relatório
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Array para armazenar os dados dos animais
+        let dadosAnimais = [];
+        let isEditing = false;
+        let animalToEditIndex = -1;
+
+        // Funções de utilidade para manipulação do DOM e mensagens
+        function getEl(id) {
+            return document.getElementById(id);
+        }
+
+        function showMessage(message) {
+            const messageBox = getEl('message-box');
+            getEl('message-text').textContent = message;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 1500); // 1.5 segundos
+        }
+
+        document.addEventListener('click', (event) => {
+            const messageBox = getEl('message-box');
+            if (!messageBox.classList.contains('hidden') && !messageBox.contains(event.target)) {
+                messageBox.classList.add('hidden');
+            }
+        });
+
+        // Referências aos elementos do DOM
+        const addAnimalBtn = getEl('add-animal-btn');
+        const generatePdfBtn = getEl('generate-pdf-btn');
+        const clearDataBtn = getEl('clear-data-btn');
+        const editLastBtn = getEl('edit-last-btn');
+        const animalIdInput = getEl('animal-id');
+        const animalPesoInput = getEl('animal-peso');
+        const animalRacaInput = getEl('animal-raca');
+        const animalSexoSelect = getEl('animal-sexo');
+        const animalListBody = getEl('animal-list-body');
+        
+        // Referências do modal
+        const nameModal = getEl('name-modal');
+        const responsavelNomeInput = getEl('responsavel-nome-input');
+        const loteCategoriaInput = getEl('lote-categoria-input');
+        const modalGenerateBtn = getEl('modal-generate-btn');
+        const modalCancelBtn = getEl('modal-cancel-btn');
+
+
+        // Referências aos displays de cálculo dinâmicos
+        const calculationsByRaca = getEl('calculations-by-raca');
+        const calculationsByRacaSexo = getEl('calculations-by-raca-sexo');
+        const calculationsTotal = getEl('calculations-total');
+
+        // Função para normalizar dados de raça
+        function normalizeRaca(input) {
+            const normalizedInput = input.trim().toLowerCase();
+            switch (normalizedInput) {
+                case 'nelore':
+                case 'nellore':
+                case 'nelori':
+                case 'nel':
+                case 'ne':
+                case 'neolre':
+                case 'nelor':
+                    return 'Nelore';
+                case 'angus':
+                case 'angus preto':
+                case 'angus vermelho':
+                case 'ang':
+                case 'an':
+                case 'angu':
+                case 'aberdeen':
+                    return 'Angus';
+                case 'brahman':
+                case 'brâmane':
+                    return 'Brahman';
+                case 'guzerá':
+                case 'guzera':
+                    return 'Guzerá';
+                case 'hereford':
+                case 'herford':
+                    return 'Hereford';
+                default:
+                    return normalizedInput.charAt(0).toUpperCase() + normalizedInput.slice(1);
+            }
+        }
+
+        // Função para renderizar a lista de animais
+        function renderAnimalList() {
+            animalListBody.innerHTML = '';
+            
+            const sortedAnimals = [...dadosAnimais].sort((a, b) => {
+                if (a.id && b.id) {
+                    return a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: 'base' });
+                }
+                return 0;
+            });
+
+            sortedAnimals.forEach((animal, index) => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'border-gray-200');
+                row.innerHTML = `
+                    <td class="py-2 px-4">${animal.id || '-'}</td>
+                    <td class="py-2 px-4">${animal.peso.toFixed(2)}</td>
+                    <td class="py-2 px-4">${animal.raca || '-'}</td>
+                    <td class="py-2 px-4">${animal.sexo || '-'}</td>
+                    <td class="py-2 px-4">
+                        <button onclick="editAnimal(${index})" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-2 py-1 rounded-full">Editar</button>
+                        <button onclick="removeAnimal(${index})" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-full ml-1">Remover</button>
+                    </td>
+                `;
+                animalListBody.appendChild(row);
+            });
+        }
+
+        // Função para calcular e atualizar os valores automáticos
+        function updateCalculos() {
+            calculationsByRaca.innerHTML = '';
+            calculationsByRacaSexo.innerHTML = '';
+            calculationsTotal.innerHTML = '';
+
+            if (dadosAnimais.length === 0) {
+                calculationsTotal.innerHTML = `
+                    <div><p class="text-sm font-medium text-gray-700">Quantidade de Animais:</p><p class="text-lg font-bold text-blue-600">0</p></div>
+                    <div><p class="text-sm font-medium text-gray-700">Peso Total (kg):</p><p class="text-lg font-bold text-blue-600">0</p></div>
+                    <div><p class="text-sm font-medium text-gray-700">Média de Peso (kg):</p><p class="text-lg font-bold text-blue-600">0</p></div>
+                    <div><p class="text-sm font-medium text-gray-700">Média de Arrobas (@):</p><p class="text-lg font-bold text-blue-600">0</p></div>
+                `;
+                return;
+            }
+
+            // Cálculos por Raça
+            const racaData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                if (!racaData[raca]) {
+                    racaData[raca] = { quantidade: 0, pesoTotal: 0 };
+                }
+                racaData[raca].quantidade++;
+                racaData[raca].pesoTotal += animal.peso;
+            });
+            for (const raca in racaData) {
+                const data = racaData[raca];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                calculationsByRaca.innerHTML += `
+                    <div class="bg-gray-200 p-3 rounded-lg shadow-sm">
+                        <p class="font-bold text-gray-800">${raca}</p>
+                        <p class="text-sm">Qtde: ${data.quantidade}</p>
+                        <p class="text-sm">Peso Total: ${data.pesoTotal.toFixed(2)} kg</p>
+                        <p class="text-sm">Peso Médio: ${mediaPeso.toFixed(2)} kg</p>
+                        <p class="text-sm">Arrobas: ${arrobas.toFixed(2)} @</p>
+                    </div>
+                `;
+            }
+
+            // Cálculos por Raça e Sexo
+            const racaSexoData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                const sexo = animal.sexo || 'Sem sexo';
+                const key = `${raca} / ${sexo}`;
+                if (!racaSexoData[key]) {
+                    racaSexoData[key] = { quantidade: 0, pesoTotal: 0 };
+                }
+                racaSexoData[key].quantidade++;
+                racaSexoData[key].pesoTotal += animal.peso;
+            });
+            for (const key in racaSexoData) {
+                const data = racaSexoData[key];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                calculationsByRacaSexo.innerHTML += `
+                    <div class="bg-gray-200 p-3 rounded-lg shadow-sm">
+                        <p class="font-bold text-gray-800">${key}</p>
+                        <p class="text-sm">Qtde: ${data.quantidade}</p>
+                        <p class="text-sm">Peso Total: ${data.pesoTotal.toFixed(2)} kg</p>
+                        <p class="text-sm">Peso Médio: ${mediaPeso.toFixed(2)} kg</p>
+                        <p class="text-sm">Arrobas: ${arrobas.toFixed(2)} @</p>
+                    </div>
+                `;
+            }
+
+            // Cálculos do Total Geral
+            const totalQuantidade = dadosAnimais.length;
+            const totalPeso = dadosAnimais.reduce((sum, animal) => sum + animal.peso, 0);
+            const mediaPesoTotal = totalPeso / totalQuantidade;
+            const arrobasTotal = mediaPesoTotal / 30;
+
+            calculationsTotal.innerHTML = `
+                <div><p class="text-sm font-medium text-gray-700">Quantidade de Animais:</p><p class="text-lg font-bold text-blue-600">${totalQuantidade}</p></div>
+                <div><p class="text-sm font-medium text-gray-700">Peso Total (kg):</p><p class="text-lg font-bold text-blue-600">${totalPeso.toFixed(2)}</p></div>
+                <div><p class="text-sm font-medium text-gray-700">Média de Peso (kg):</p><p class="text-lg font-bold text-blue-600">${mediaPesoTotal.toFixed(2)}</p></div>
+                <div><p class="text-sm font-medium text-gray-700">Média de Arrobas (@):</p><p class="text-lg font-bold text-blue-600">${arrobasTotal.toFixed(2)}</p></div>
+            `;
+        }
+
+        // --- Funções para a geração do PDF ---
+        function generatePDF(responsavel, categoriaLote) {
+            if (dadosAnimais.length === 0) {
+                showMessage("Adicione animais para gerar um relatório.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 20;
+
+            doc.setFontSize(22);
+            doc.text("Relatório de Pesagem", 105, y, null, null, "center");
+            y += 20;
+
+            // Seção Detalhes do Lote
+            doc.setFontSize(16);
+            doc.text("Detalhes do Lote", 15, y);
+            y += 10;
+            
+            doc.setFontSize(12);
+            if (responsavel) {
+                doc.text(`Responsável: ${responsavel}`, 15, y);
+                y += 7;
+            }
+
+            if (categoriaLote) {
+                doc.text(`Categoria do Lote: ${categoriaLote}`, 15, y);
+                y += 7;
+            }
+
+            doc.text(`Data de Emissão: ${new Date().toLocaleDateString()}`, 15, y);
+            y += 15;
+
+            // Seção Resumo da Pesagem
+            doc.setFontSize(16);
+            doc.text("Resumo da Pesagem", 15, y);
+            y += 10;
+            const headersResumo = [["Quantidade de Animais", "Peso Total (kg)", "Média de Peso (kg)", "Média de Arrobas (@)"]];
+            const dataResumo = [[
+                dadosAnimais.length,
+                dadosAnimais.reduce((sum, a) => sum + a.peso, 0).toFixed(2),
+                (dadosAnimais.length > 0 ? (dadosAnimais.reduce((sum, a) => sum + a.peso, 0) / dadosAnimais.length).toFixed(2) : '0'),
+                (dadosAnimais.length > 0 ? (dadosAnimais.reduce((sum, a) => sum + a.peso, 0) / dadosAnimais.length / 30).toFixed(2) : '0')
+            ]];
+            doc.autoTable({
+                head: headersResumo,
+                body: dataResumo,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+
+            // Seção Por Raça
+            doc.setFontSize(16);
+            doc.text("Por Raça", 15, y);
+            y += 10;
+            const headersRaca = [["Raça", "Quantidade", "Peso Total (kg)", "Peso Médio (kg)", "Arrobas (@)"]];
+            const dataRaca = [];
+            const racaData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                if (!racaData[raca]) racaData[raca] = { quantidade: 0, pesoTotal: 0 };
+                racaData[raca].quantidade++;
+                racaData[raca].pesoTotal += animal.peso;
+            });
+            for (const raca in racaData) {
+                const data = racaData[raca];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                dataRaca.push([raca, data.quantidade, data.pesoTotal.toFixed(2), mediaPeso.toFixed(2), arrobas.toFixed(2)]);
+            }
+            doc.autoTable({
+                head: headersRaca,
+                body: dataRaca,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+
+            // Seção Por Raça e Sexo
+            doc.setFontSize(16);
+            doc.text("Por Raça e Sexo", 15, y);
+            y += 10;
+            const headersRacaSexo = [["Raça / Sexo", "Quantidade", "Peso Total (kg)", "Peso Médio (kg)", "Arrobas (@)"]];
+            const dataRacaSexo = [];
+            const racaSexoData = {};
+            dadosAnimais.forEach(animal => {
+                const raca = animal.raca || 'Sem raça';
+                const sexo = animal.sexo || 'Sem sexo';
+                const key = `${raca} / ${sexo}`;
+                if (!racaSexoData[key]) {
+                    racaSexoData[key] = { quantidade: 0, pesoTotal: 0 };
+                }
+                racaSexoData[key].quantidade++;
+                racaSexoData[key].pesoTotal += animal.peso;
+            });
+            for (const key in racaSexoData) {
+                const data = racaSexoData[key];
+                const mediaPeso = data.pesoTotal / data.quantidade;
+                const arrobas = mediaPeso / 30;
+                dataRacaSexo.push([key, data.quantidade, data.pesoTotal.toFixed(2), mediaPeso.toFixed(2), arrobas.toFixed(2)]);
+            }
+            doc.autoTable({
+                head: headersRacaSexo,
+                body: dataRacaSexo,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+
+            // Seção Lista de Animais
+            doc.setFontSize(16);
+            doc.text("Lista de Animais", 15, y);
+            y += 10;
+            const headersAnimais = [["ID", "Peso (kg)", "Raça", "Sexo"]];
+            const dataAnimais = dadosAnimais.map(animal => [
+                animal.id || '-',
+                animal.peso.toFixed(2),
+                animal.raca || '-',
+                animal.sexo || '-'
+            ]);
+            doc.autoTable({
+                head: headersAnimais,
+                body: dataAnimais,
+                startY: y,
+                theme: 'striped',
+                headStyles: { fillColor: [249, 115, 22], textColor: [255, 255, 255] },
+                alternateRowStyles: { fillColor: [243, 244, 233] }
+            });
+            y = doc.autoTable.previous.finalY + 15;
+
+            doc.save("Relatorio_Pesagem.pdf");
+        }
+
+        // --- Funções de manipulação de dados ---
+        function clearInputs() {
+            animalIdInput.value = '';
+            animalPesoInput.value = '';
+            animalRacaInput.value = '';
+            animalSexoSelect.value = '';
+        }
+
+        function toggleEditMode(editing) {
+            isEditing = editing;
+            addAnimalBtn.textContent = editing ? 'Atualizar Animal' : 'Adicionar Animal';
+            addAnimalBtn.classList.toggle('bg-orange-500', editing);
+            addAnimalBtn.classList.toggle('bg-green-500', !editing);
+            editLastBtn.disabled = editing;
+        }
+        
+        // --- Funções para editar e remover ---
+        function editAnimal(index) {
+            const animal = dadosAnimais[index];
+            animalIdInput.value = animal.id || '';
+            animalPesoInput.value = animal.peso;
+            animalRacaInput.value = animal.raca || '';
+            animalSexoSelect.value = animal.sexo || '';
+            toggleEditMode(true);
+            animalToEditIndex = index;
+        }
+
+        function removeAnimal(index) {
+            dadosAnimais.splice(index, 1);
+            updateCalculos();
+            renderAnimalList();
+            showMessage("Animal removido com sucesso!");
+        }
+
+        // --- Event Listeners ---
+        addAnimalBtn.addEventListener('click', () => {
+            const peso = parseFloat(animalPesoInput.value);
+            const sexo = animalSexoSelect.value;
+            if (isNaN(peso) || peso <= 0) {
+                showMessage("Por favor, insira um peso válido.");
+                return;
+            }
+            if (!sexo) {
+                showMessage("Por favor, selecione o sexo do animal.");
+                return;
+            }
+
+            const animal = {
+                id: animalIdInput.value.trim() || null,
+                peso: peso,
+                raca: normalizeRaca(animalRacaInput.value),
+                sexo: sexo,
+                data: new Date().toISOString()
+            };
+
+            if (isEditing) {
+                dadosAnimais[animalToEditIndex] = animal;
+                toggleEditMode(false);
+                showMessage("Animal atualizado com sucesso!");
+            } else {
+                dadosAnimais.push(animal);
+                showMessage("Animal adicionado com sucesso!");
+            }
+
+            clearInputs();
+            updateCalculos();
+            renderAnimalList();
+        });
+
+        editLastBtn.addEventListener('click', () => {
+            if (dadosAnimais.length > 0) {
+                const lastIndex = dadosAnimais.length - 1;
+                editAnimal(lastIndex);
+            } else {
+                showMessage("Nenhum animal para editar.");
+            }
+        });
+
+        // Event listener para mostrar o modal
+        generatePdfBtn.addEventListener('click', () => {
+            if (dadosAnimais.length === 0) {
+                showMessage("Adicione animais para gerar um relatório.");
+                return;
+            }
+            nameModal.classList.remove('hidden');
+            responsavelNomeInput.focus();
+        });
+
+        // Event listener para o botão de Gerar no modal
+        modalGenerateBtn.addEventListener('click', () => {
+            const responsavelNome = responsavelNomeInput.value.trim();
+            const loteCategoria = loteCategoriaInput.value.trim();
+            nameModal.classList.add('hidden');
+            generatePDF(responsavelNome, loteCategoria);
+        });
+
+        // Event listener para o botão de Cancelar no modal
+        modalCancelBtn.addEventListener('click', () => {
+            nameModal.classList.add('hidden');
+        });
+
+        clearDataBtn.addEventListener('click', () => {
+            dadosAnimais = [];
+            updateCalculos();
+            renderAnimalList();
+            clearInputs();
+            toggleEditMode(false);
+            showMessage("Dados limpos com sucesso!");
+        });
+
+        // Chamada inicial para atualizar os cálculos
+        updateCalculos();
+    </script>
+</body>
+</html>
